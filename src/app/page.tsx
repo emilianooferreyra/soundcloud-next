@@ -64,11 +64,11 @@ export default function Home() {
           Discover New Music
         </h1>
 
-        <div className="space-y-3">
+        {/*<div className="space-y-3">
           {tracks.map((track) => (
             <TrackCard key={track.id} track={track} layout="full" />
           ))}
-        </div>
+        </div>*/}
 
         <PlayerDemo />
       </div>

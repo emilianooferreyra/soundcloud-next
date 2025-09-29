@@ -3,15 +3,15 @@ import { SoundCloudPlayer } from "./SouncloudPlayer";
 export const PlayerDemo = () => {
   const sampleTrack = {
     id: "1",
-    title: "Disclosure - F For You",
+    title: "F For You [5TUIciKQzxI].mp3",
     artist: "Disclosure",
-    duration: 213, // 4:04 in seconds
+    duration: 250,
     audioUrl: "/tracks/Disclosure - F For You [5TUIciKQzxI].mp3",
-    artwork: "/images/disclosure-cover.jpg",
+    artwork: "/images/disclosure.jpg",
   };
 
   return (
-    <div className="container mx-auto p-8">
+    <div className="container mx-auto">
       <div className="max-w-4xl mx-auto">
         <SoundCloudPlayer
           track={sampleTrack}

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { WaveformTimeline } from "./WaveformTimeline";
+import { Pause, Play } from "lucide-react";
+import Image from "next/image";
 
 interface Track {
   id: string;
@@ -10,6 +12,8 @@ interface Track {
   duration: number;
   audioUrl: string;
   artwork?: string;
+  uploadedAt?: string;
+  genre?: string;
 }
 
 interface SoundCloudPlayerProps {
@@ -102,39 +106,91 @@ export const SoundCloudPlayer = ({
   const progress = duration > 0 ? currentTime / duration : 0;
 
   return (
-    <div className="soundcloud-player bg-white  shadow-lg p-6">
+    <div className="soundcloud-player-redesign bg-gradient">
       <audio ref={audioRef} src={track.audioUrl} preload="metadata" />
 
-      <div className="flex items-center gap-4 mb-4">
-        <button
-          onClick={togglePlayPause}
-          disabled={!isReady}
-          className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 disabled:opacity-50"
-        >
-          {isPlaying ? "⏸" : "▶"}
-        </button>
+      <div className="soundcloud-player-redesign__overlay" />
 
-        <div className="flex-1">
-          <h3 className="font-bold text-lg">{track.title}</h3>
-          <p className="text-gray-600">{track.artist}</p>
+      {/* Content */}
+      <div className="soundcloud-player-redesign__content">
+        {/* Left section - Play button and track info */}
+        <div className="soundcloud-player-redesign__left">
+          <div className="soundcloud-player-redesign__controls">
+            <button
+              onClick={togglePlayPause}
+              disabled={!isReady}
+              className="soundcloud-player-redesign__play-btn"
+            >
+              {isPlaying ? (
+                <Pause size={24} fill="white" />
+              ) : (
+                <Play size={24} fill="white" />
+              )}
+            </button>
+
+            <div className="soundcloud-player-redesign__track-info">
+              <h1 className="soundcloud-player-redesign__title">
+                {track.title}
+              </h1>
+              <p className="soundcloud-player-redesign__artist">
+                {track.artist}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="text-sm text-gray-500">
-          {formatTime(currentTime)} / {formatTime(duration)}
+        {/* Right section - Upload date, genre and artwork */}
+        <div className="soundcloud-player-redesign__right">
+          <div className="soundcloud-player-redesign__metadata">
+            {track.uploadedAt && (
+              <span className="soundcloud-player-redesign__date">
+                {track.uploadedAt}
+              </span>
+            )}
+            {track.genre && (
+              <span className="soundcloud-player-redesign__genre">
+                #{track.genre}
+              </span>
+            )}
+          </div>
+
+          {/* Album artwork */}
+          <div className="soundcloud-player-redesign__artwork">
+            <Image
+              src={track.artwork || "/images/disclosure.jpg"}
+              alt={`${track.title} artwork`}
+              width={200}
+              height={200}
+              className="soundcloud-player-redesign__artwork-img"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="relative">
-        <WaveformTimeline
-          url={track.audioUrl}
-          progress={progress}
-          isPlaying={isPlaying}
-          onReady={() => setIsReady(true)}
-          onProgress={handleProgressChange}
-          waveColor="#ccc"
-          progressColor="#ff5500"
-          className="h-16"
-        />
+      {/* Waveform section */}
+      <div className="soundcloud-player-redesign__waveform-container">
+        {/* Waveform */}
+        <div className="soundcloud-player-redesign__waveform">
+          <WaveformTimeline
+            url={track.audioUrl}
+            progress={progress}
+            isPlaying={isPlaying}
+            onReady={() => setIsReady(true)}
+            onProgress={handleProgressChange}
+            waveColor="rgba(255, 255, 255, 0.4)"
+            progressColor="#ff5500"
+          />
+        </div>
+
+        {/* Time indicators positioned over the waveform */}
+        <div className="soundcloud-player-redesign__time-indicators">
+          <span className="soundcloud-player-redesign__current-time">
+            {formatTime(currentTime)}
+          </span>
+          <span className="soundcloud-player-redesign__total-time">
+            {formatTime(duration)}
+          </span>
+        </div>
       </div>
     </div>
   );

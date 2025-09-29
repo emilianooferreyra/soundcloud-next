@@ -1,4 +1,3 @@
-// hooks/useWaveformData.ts
 import { useState, useEffect, useCallback, useRef } from "react";
 
 interface UseWaveformDataResult {
@@ -60,12 +59,15 @@ export const useWaveformData = (url: string): UseWaveformDataResult => {
         }
         const arrayBuffer = await response.arrayBuffer();
 
-        const audioBuffer = await new Promise<AudioBuffer>((resolve, reject) => {
-          audioContext.decodeAudioData(arrayBuffer, resolve, (err) => reject(err));
-        });
-        
-        await processAudio(audioBuffer);
+        const audioBuffer = await new Promise<AudioBuffer>(
+          (resolve, reject) => {
+            audioContext.decodeAudioData(arrayBuffer, resolve, (err) =>
+              reject(err)
+            );
+          }
+        );
 
+        await processAudio(audioBuffer);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to decode audio data";
