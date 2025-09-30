@@ -1,7 +1,7 @@
 "use client";
 
+import { useRef, useEffect, useCallback } from "react";
 import { useWaveformData } from "@/hooks/useWaveformData";
-import React, { useRef, useEffect, useCallback } from "react";
 
 interface WaveformProps {
   url: string;
@@ -10,12 +10,12 @@ interface WaveformProps {
   onReady: () => void;
 }
 
-export const Waveform: React.FC<WaveformProps> = ({
+export const Waveform = ({
   url,
   className = "",
   waveColor = "#1d1e1f",
   onReady,
-}) => {
+}: WaveformProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { data, loading, error } = useWaveformData(url);

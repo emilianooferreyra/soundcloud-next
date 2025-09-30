@@ -1,9 +1,3 @@
-export interface WaveformData {
-  width: number;
-  height: number;
-  samples: number[];
-}
-
 export interface WaveformPlayerProps {
   url: string;
   onReady?: () => void;

@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import { useState, useCallback, MouseEvent } from "react";
 import type { WaveformPlayerProps } from "../types/waveform";
 import { Waveform } from "./Waveform";
 import { AudioTimeline } from "./AudioTimeline";
 
-export const WaveformTimeline: React.FC<WaveformPlayerProps> = ({
+export const WaveformTimeline = ({
   url,
   onReady,
   onProgress,
   progress = 0,
-  isPlaying = false,
   className = "",
   waveColor = "#666",
   progressColor = "#ff5500",
-}) => {
+}: WaveformPlayerProps) => {
   const [isReady, setIsReady] = useState(false);
 
   const handleWaveformReady = useCallback(() => {
@@ -23,7 +22,7 @@ export const WaveformTimeline: React.FC<WaveformPlayerProps> = ({
   }, [onReady]);
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    (event: MouseEvent<HTMLDivElement>) => {
       if (!isReady || !onProgress) return;
 
       const rect = event.currentTarget.getBoundingClientRect();

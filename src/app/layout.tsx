@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SoundCloud Next",
-  description: "Modern SoundCloud client built with Next.js and Zustand",
+  title: "SoundCloud",
+  description: "",
 };
 
 export default function RootLayout({

@@ -1,21 +1,44 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Headphones, Heart, Share } from "lucide-react";
-import { useAppStore } from "@/store/useAppStore";
+import { useState } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Play, Pause } from "lucide-react";
+import { useAppStore } from "@/store/useAppStore";
+import { WaveformTimeline } from "./WaveformTimeline";
+import { formatTime } from "@/lib/formatTime";
 
 interface TrackCardProps {
   track: any;
   layout?: "compact" | "full";
 }
 
-export const TrackCard = ({ track, layout = "compact" }: TrackCardProps) => {
+export const TrackCard = ({ track }: TrackCardProps) => {
   const { player, playTrack, pauseTrack } = useAppStore();
+  const [isReady, setIsReady] = useState(false);
+
+  const progress =
+    player.currentTrack?.id === track.id && player.duration > 0
+      ? player.currentTime / player.duration
+      : 0;
+
+  const handleProgressChange = (newProgress: number) => {
+    if (player.currentTrack?.id === track.id && player.audioRef) {
+      const newTime = newProgress * player.duration;
+      player.audioRef.currentTime = newTime;
+      useAppStore.getState().setCurrentTime(newTime);
+    }
+  };
+
+  const displayIsPlaying =
+    player.currentTrack?.id === track.id && player.isPlaying;
 
   const isCurrentlyPlaying =
     player.currentTrack?.id === track.id && player.isPlaying;
+
+  const audioUrl =
+    track.stream_url || (track.fileName ? `/tracks/${track.fileName}` : "");
 
   const handlePlay = () => {
     if (player.currentTrack?.id === track.id) {
@@ -29,112 +52,68 @@ export const TrackCard = ({ track, layout = "compact" }: TrackCardProps) => {
     }
   };
 
-  if (layout === "compact") {
-    return (
-      <Card className="mb-[30px] pt-5 bg-[#1d1e1f]">
-        <div className="relative h-40 bg-[#171819]">
-          {track.artwork_url ? (
-            <Image
-              src={track.artwork_url}
-              alt={track.title}
-              className="absolute w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute w-full h-full bg-gray-800 flex items-center justify-center">
-              <div className="bg-gray-700 rounded-xl w-16 h-16" />
-            </div>
-          )}
-        </div>
-
-        <CardContent className="p-4">
-          <div className="text-[#7d7e7f] text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-            {track.user?.username}
-          </div>
-          <div className="text-[#bdbebf] text-[14px] mt-0 mb-2 leading-[20px/14px] overflow-hidden text-ellipsis whitespace-nowrap">
-            {track.title}
-          </div>
-
-          <div className="flex items-center h-10 text-[#5d5e5f] fill-[#4d4e4f] text-[13px]">
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-none text-[#4d4e4f] hover:text-[#78797a] active:bg-black/20"
-                onClick={handlePlay}
-              >
-                {isCurrentlyPlaying ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </Button>
-              <span className="ml-1.5">Play</span>
-            </div>
-
-            <div className="flex items-center ml-4">
-              <Headphones className="h-4 w-4 mr-1.5 text-[#5d5e5f]" />
-              <span>{track.playback_count || 0}</span>
-            </div>
-
-            <div className="flex items-center ml-4">
-              <Heart className="h-4 w-4 mr-1.5 text-[#5d5e5f]" />
-              <span>{track.favoritings_count || 0}</span>
-            </div>
-
-            <div className="flex items-center ml-auto">
-              <Share className="h-4 w-4 text-[#5d5e5f]" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="mb-[16px] bg-[#1d1e1f] overflow-hidden flex flex-row ">
-      <div className="relative w-[220px] bg-[#171819] flex-shrink-0">
-        <Image
-          width="100"
-          height="100"
-          src={track.artwork_url}
-          alt={track.title}
-          className="w-full h-full object-cover"
-        />
-      </div>
+    <Card className="soundcloud-track-card">
+      <div className="soundcloud-track-card__content">
+        <div className="soundcloud-track-card__info">
+          <div className="soundcloud-track-card__header">
+            <div className="flex items-center">
+              <div className="soundcloud-track-card__play-overlay mr-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="soundcloud-track-card__play-btn"
+                  onClick={handlePlay}
+                  disabled={!isReady}
+                >
+                  {isCurrentlyPlaying ? (
+                    <Pause className="h-5 w-5" fill="currentColor" />
+                  ) : (
+                    <Play className="h-5 w-5 ml-0.5" fill="currentColor" />
+                  )}
+                </Button>
+              </div>
+              <div className="bg-black ml-20 p-2">
+                <div className="soundcloud-track-card__meta">
+                  <span className="soundcloud-track-card__username">
+                    {track.user?.username || "Unknown Artist"}
+                  </span>
+                </div>
+                <h3 className="soundcloud-track-card__title">{track.title}</h3>
+              </div>
+            </div>
 
-      <div className="flex-1  p-4 pl-6 overflow-hidden">
-        <div className="text-[#7d7e7f] text-sm overflow-hidden text-ellipsis whitespace-nowrap">
-          {track.user?.username}
+            <div className="soundcloud-track-card__waveform">
+              <WaveformTimeline
+                url={audioUrl}
+                progress={progress}
+                isPlaying={displayIsPlaying}
+                onReady={() => setIsReady(true)}
+                onProgress={handleProgressChange}
+                waveColor="rgba(255, 255, 255, 0.5)"
+                progressColor="#ff5500"
+              />
+
+              <div className="soundcloud-player__time-indicators mt-8">
+                <span className="soundcloud-player__current-time">
+                  {formatTime(player.currentTime)}
+                </span>
+                <span className="soundcloud-player__total-time">
+                  {formatTime(player.duration)}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="text-[#bdbebf] text-[15px] mb-4 overflow-hidden text-ellipsis whitespace-nowrap">
-          {track.title}
-        </div>
 
-        <div className="flex items-center text-[#777879] fill-[#4d4e4f] text-[13px]">
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-[#4d4e4f] hover:text-[#78797a] active:bg-black/20"
-              onClick={handlePlay}
-            >
-              {isCurrentlyPlaying ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          <div className="flex items-center ml-6">
-            <Headphones className="h-4 w-4 mr-1.5 text-[#777879]" />
-            <span>{track.playback_count || 0}</span>
-          </div>
-
-          <div className="flex items-center ml-6">
-            <Heart className="h-4 w-4 mr-1.5 text-[#777879]" />
-            <span>{track.favoritings_count || 0}</span>
-          </div>
+        <div className="soundcloud-track-card__artwork">
+          <Image
+            width={320}
+            height={320}
+            src={track.artwork_url || "/images/default-artwork.jpg"}
+            alt={track.title}
+            className="soundcloud-track-card__artwork-img"
+          />
         </div>
       </div>
     </Card>

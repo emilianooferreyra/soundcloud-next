@@ -12,14 +12,16 @@ export const useWaveformData = (url: string): UseWaveformDataResult => {
   const [error, setError] = useState<string | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize AudioContext on the client side
   useEffect(() => {
     if (typeof window !== "undefined" && !audioContextRef.current) {
       audioContextRef.current = new window.AudioContext();
     }
-    // Cleanup AudioContext on unmount
     return () => {
-      audioContextRef.current?.close();
+      const audioContext = audioContextRef.current;
+      if (audioContext && audioContext.state !== "closed") {
+        audioContext.close();
+      }
+      audioContextRef.current = null;
     };
   }, []);
 

@@ -1,9 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { Search } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import { useState } from "react";
 
 export const AppHeader = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);

@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, SkipForward, SkipBack } from "lucide-react";
-import { useAppStore } from "@/store/useAppStore";
 import { useEffect, useRef, useState } from "react";
+import { Play, Pause, Volume2, SkipForward, SkipBack } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAppStore } from "@/store/useAppStore";
 
 export const Player = () => {
   const {
@@ -12,7 +12,6 @@ export const Player = () => {
     pauseTrack,
     setCurrentTime,
     setVolume,
-    stopTrack,
     setAudioRef,
     skipTrack,
   } = useAppStore();

@@ -19,11 +19,6 @@ export interface Track {
   fileName?: string;
 }
 
-interface BrowserState {
-  isMobile: boolean;
-  isTablet: boolean;
-}
-
 interface PlayerState {
   currentTrack: Track | null;
   isPlaying: boolean;
@@ -33,69 +28,25 @@ interface PlayerState {
   audioRef: HTMLAudioElement | null;
 }
 
-interface SearchState {
-  query: string;
-  results: Track[];
-  isLoading: boolean;
-  error: string | null;
-}
-
-interface TracklistsState {
-  tracks: Track[];
-  isLoading: boolean;
-  error: string | null;
-}
-
 interface TracksState {
   items: Track[];
   isLoading: boolean;
   error: string | null;
 }
 
-interface UsersState {
-  profile: User | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
 interface AppState {
-  // State slices
-  browser: BrowserState;
   player: PlayerState;
-  search: SearchState;
-  tracklists: TracklistsState;
   tracks: TracksState;
-  users: UsersState;
 
-  // Actions
-  // Browser actions
-  setBrowserState: (state: Partial<BrowserState>) => void;
-
-  // Player actions
-  setPlayerState: (state: Partial<PlayerState>) => void;
   playTrack: (track: Track) => void;
   pauseTrack: () => void;
   setCurrentTime: (time: number) => void;
-  setDuration: (duration: number) => void;
   setVolume: (volume: number) => void;
   setAudioRef: (audio: HTMLAudioElement | null) => void;
   stopTrack: () => void;
   skipTrack: (direction: "next" | "previous") => void;
 
-  // Search actions
-  setSearchState: (state: Partial<SearchState>) => void;
-  setSearchQuery: (query: string) => void;
-  setSearchResults: (results: Track[]) => void;
-
-  // Tracklists actions
-  setTracklistsState: (state: Partial<TracklistsState>) => void;
-
-  // Tracks actions
-  setTracksState: (state: Partial<TracksState>) => void;
   setTracks: (tracks: Track[]) => void;
-
-  // Users actions
-  setUsersState: (state: Partial<UsersState>) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -103,57 +54,23 @@ export const useAppStore = create<AppState>()(
     persist(
       (set, get) => {
         return {
-          // Initial state
-          browser: {
-            isMobile: false,
-            isTablet: false,
-          },
           player: {
             currentTrack: null,
             isPlaying: false,
             currentTime: 0,
             duration: 0,
             volume: 1,
-            audioRef: null, // Initialize as null, will be set by Player component
-          },
-          search: {
-            query: "",
-            results: [],
-            isLoading: false,
-            error: null,
-          },
-          tracklists: {
-            tracks: [],
-            isLoading: false,
-            error: null,
+            audioRef: null,
           },
           tracks: {
             items: [],
             isLoading: false,
             error: null,
           },
-          users: {
-            profile: null,
-            isLoading: false,
-            error: null,
-          },
 
-          // Actions
-          // Browser actions
-          setBrowserState: (state) =>
-            set((prev) => ({
-              browser: { ...prev.browser, ...state },
-            })),
-
-          // Player actions
-          setPlayerState: (state) =>
-            set((prev) => ({
-              player: { ...prev.player, ...state },
-            })),
           playTrack: (track: Track) => {
             const { player } = get();
 
-            // If the same track is being played, just resume
             if (player.currentTrack?.id === track.id && !player.isPlaying) {
               if (player.audioRef) {
                 player.audioRef.play();
@@ -167,10 +84,8 @@ export const useAppStore = create<AppState>()(
               return;
             }
 
-            // Create audio element if it doesn't exist
             let audio = player.audioRef;
             if (!audio) {
-              // Only create audio element on client side
               if (typeof window !== "undefined") {
                 audio = new Audio();
                 audio.volume = player.volume;
@@ -188,13 +103,10 @@ export const useAppStore = create<AppState>()(
               }
             }
 
-            // If a different track is being played, load the new track
             if (audio) {
-              // Load the track via its stream_url or construct from filename
               const trackUrl = track.stream_url || `/tracks/${track.fileName}`;
               audio.src = trackUrl;
 
-              // Once audio is loaded, play it
               audio.onloadeddata = () => {
                 set((prev) => ({
                   player: {
@@ -210,7 +122,6 @@ export const useAppStore = create<AppState>()(
                 audio.play();
               };
 
-              // Update time as audio plays
               audio.ontimeupdate = () => {
                 set((prev) => ({
                   player: {
@@ -220,7 +131,6 @@ export const useAppStore = create<AppState>()(
                 }));
               };
 
-              // Handle when audio ends
               audio.onended = () => {
                 set((prev) => ({
                   player: {
@@ -230,12 +140,10 @@ export const useAppStore = create<AppState>()(
                 }));
               };
 
-              // Handle errors
               audio.onerror = () => {
                 console.error("Error playing audio:", audio.error);
               };
 
-              // Set volume
               audio.volume = player.volume;
             }
           },
@@ -277,13 +185,6 @@ export const useAppStore = create<AppState>()(
               },
             }));
           },
-          setDuration: (duration: number) =>
-            set((prev) => ({
-              player: {
-                ...prev.player,
-                duration,
-              },
-            })),
           setVolume: (volume: number) => {
             const { player } = get();
             if (player.audioRef) {
@@ -332,31 +233,6 @@ export const useAppStore = create<AppState>()(
             }
           },
 
-          // Search actions
-          setSearchState: (state) =>
-            set((prev) => ({
-              search: { ...prev.search, ...state },
-            })),
-          setSearchQuery: (query) =>
-            set((prev) => ({
-              search: { ...prev.search, query },
-            })),
-          setSearchResults: (results) =>
-            set((prev) => ({
-              search: { ...prev.search, results, isLoading: false },
-            })),
-
-          // Tracklists actions
-          setTracklistsState: (state) =>
-            set((prev) => ({
-              tracklists: { ...prev.tracklists, ...state },
-            })),
-
-          // Tracks actions
-          setTracksState: (state) =>
-            set((prev) => ({
-              tracks: { ...prev.tracks, ...state },
-            })),
           setTracks: (tracks) =>
             set((prev) => ({
               tracks: {
@@ -364,16 +240,17 @@ export const useAppStore = create<AppState>()(
                 items: tracks,
               },
             })),
-
-          // Users actions
-          setUsersState: (state) =>
-            set((prev) => ({
-              users: { ...prev.users, ...state },
-            })),
         };
       },
       {
-        name: "soundcloud-storage", // Name for localStorage key
+        name: "soundcloud-storage",
+        partialize: (state) => {
+          const { audioRef, ...playerRest } = state.player;
+          return {
+            ...state,
+            player: playerRest,
+          };
+        },
       }
     )
   )
